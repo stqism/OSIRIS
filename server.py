@@ -1,5 +1,5 @@
 #!/bin/python
-# A mix of some guys multiprocessing code, a libev sample, and old Mach3 code
+#Praise the libev sample
 
 import time
 import multiprocessing
@@ -58,7 +58,7 @@ class app():
         return payload
 
     def header2dict(self,dict):
-        hdict = { "TYPE": dict.split('\r\n',1)[0].split(' ',1)[0] }
+        hdict = { "TYPE": dict.split('\r\n',1)[0].split(' ',1)[0], "PATH": dict.split('\r\n',1)[0].split(' ',2)[1] }
         real_dict = dict.splitlines()
 
         for i in range(1, len(real_dict)):
@@ -199,17 +199,12 @@ class ServerWorker(multiprocessing.Process):
         self.loop = pyev.Loop(flags=pyev.recommended_backends())
         self.watchers = []
         self.client_count = 0
-
-        # Obtain the Queue object's underlying FD for use in the event loop
         self.in_q_fd = self.in_q._reader.fileno()
 
         self.watchers.append(pyev.Io(self.in_q_fd, 
                                      pyev.EV_READ, 
                                      self.loop,
                                      self.in_q_cb))
-
-        #self.watchers.extend(pyev.Signal(sig, self.loop, self.signal_cb)
-        #                 for sig in STOPSIGNALS])
 
         self.cnxns = {}
 

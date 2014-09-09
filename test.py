@@ -6,8 +6,10 @@ def reply(msg):
 	headers come in an object called header, keys are names
 	body is the posted data
 	TYPE is the type (get, post, etc)
+	PATH is the requested path, the /
 	"""
 
 	msg2srv = "Hello, {0}!\r\n".format(msg['header']['User-Agent'])
+	print msg['header']
 	send = { "code": 200, "msg": msg2srv, "header": {"Generic-header": "test"} }
 	return send
