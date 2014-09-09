@@ -9,5 +9,5 @@ def reply(msg):
 	"""
 
 	msg2srv = "Hello, {0}!\r\n".format(msg['header']['User-Agent'])
-	send = { "code": 200, "msg": msg2srv, "header": {"Server": "OSIRIS"} }
+	send = { "code": 200, "msg": msg2srv, "header": {"Generic-header": "test"} }
 	return send

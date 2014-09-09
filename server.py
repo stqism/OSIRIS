@@ -31,6 +31,11 @@ config = ConfigParser.ConfigParser()
 config.readfp(cfile)
 cfile.close
 
+try:
+    debug = config.get("OSIRIS","debug")
+except:
+    debug = 0
+
 exec_app = {}
 for i in range(len(config.sections())):
     if config.sections()[i] != "OSIRIS":
@@ -66,7 +71,7 @@ class app():
             return ln.split(' ',1)[1].split(':',1)[0]
 
     def gen_head(self,dict):
-        head_str = ''
+        head_str = 'Server: OSIRIS Mach/4\r\n'
         for header, data in dict.iteritems():
             head_str += "{0}: {1}\r\n".format(header,data)
         return head_str
@@ -84,7 +89,8 @@ class app():
                 logging.error("No fallback found")
                 return self.html(500,"No fallback configured :(\r\n",head_str='')
 
-        reload(exec_app[hostname]) #debug only
+        if (debug):
+            reload(exec_app[hostname])
 
         try:
             buf_head = buf.split('\r\n\r\n',1)[0]
@@ -133,8 +139,9 @@ class Connection(object):
         self.watcher.start()
 
     def handle_error(self, msg, level=logging.ERROR, exc_info=True):
-        logging.error("[{0}:{1}] Error on connection with [{2}]:[{3}]".format(self.parent.name,self.cnxn_id,msg,self.remote_address),
-                    exc_info=exc_info)
+        if (debug):
+            logging.info("[{0}:{1}] Error on connection with [{2}]:[{3}]".format(self.parent.name,self.cnxn_id,msg,self.remote_address),
+                        exc_info=exc_info)
         self.close()
 
     def handle_read(self):
@@ -181,14 +188,10 @@ class Connection(object):
         self.sock.close()
         self.watcher.stop()
         self.watcher = None
-        logging.error("[{0}:{1}] Connection closed with [{2}]".format(self.parent.name,self.cnxn_id,self.remote_address))
+        if (debug):
+            logging.info("[{0}:{1}] Connection closed with [{2}]".format(self.parent.name,self.cnxn_id,self.remote_address))
 
 class ServerWorker(multiprocessing.Process):
-    """ A worker process which 
-            - handles incoming socket FDs from the master and recreates a socket from it,
-            - creates and manages a bunch of connection objects ( one per connected socket )  
-            - uses own pyev event loop to manage all the connected sockets
-    """
     def __init__(self,name,in_q,out_q):
         multiprocessing.Process.__init__(self,group=None,name=name)
         self.in_q = in_q
@@ -216,9 +219,12 @@ class ServerWorker(multiprocessing.Process):
         for watcher in self.watchers:
             watcher.start()
 
-        logging.info("ServerWorker[{0}:{1}]: Running...".format(os.getpid(),self.name))
+        if (debug):
+            logging.info("ServerWorker[{0}:{1}]: Running...".format(os.getpid(),self.name))
         self.loop.start()
-        logging.info("ServerWorker[{0}:{1}]: Exited event loop!".format(os.getpid(),self.name))
+
+        if (debug):
+            logging.info("ServerWorker[{0}:{1}]: Exited event loop!".format(os.getpid(),self.name))
 
     def stop(self):
         while self.watchers:
@@ -228,7 +234,8 @@ class ServerWorker(multiprocessing.Process):
 
         self.out_q.put("quitdone")
 
-        logging.info("ServerWorker[{0}:{1}]: Stopped!".format(os.getpid(),self.name))
+        if (debug):
+            logging.info("ServerWorker[{0}:{1}]: Stopped!".format(os.getpid(),self.name))
 
         sys.exit(0)
 
@@ -260,8 +267,8 @@ class ServerWorker(multiprocessing.Process):
                 self.reset(pyev.EV_READ)
 
             elif type(val) == type("") and val == "quit":
-
-                logging.info("ServerWorker[{0}:{1}]: Received quit message!".format(os.getpid(),self.name))
+                if (debug):
+                    logging.info("ServerWorker[{0}:{1}]: Received quit message!".format(os.getpid(),self.name))
                 self.stop()
 
         except Queue.Empty:
@@ -271,12 +278,6 @@ class ServerWorker(multiprocessing.Process):
 
 
 class ServerMaster(object):
-    """ Master process which does the following:
-          - Sets up nonblocking listening socket 
-          - Launches bunch of worker processes and sets up IPC queues to manage them
-          - Uses pyev default loop to manage events on the listen socket,signals and worker queues
-          - On successful accept(), passes the connected socket to a chosen worker process
-    """
     def __init__(self, 
             start_server_ip="127.0.0.1",
             start_server_port=5000,
@@ -347,12 +348,15 @@ class ServerMaster(object):
 
         self.listen_sock.listen(socket.SOMAXCONN)
 
-        logging.info("ServerMaster[{0}]: Started listening on [{1.address}]...".format(os.getpid(),self))
+        if (debug):
+            logging.info("ServerMaster[{0}]: Started listening on [{1.address}]...".format(os.getpid(),self))
+        print "OSIRIS is listening on {0}, port {1}".format(self.address[0],self.address[1])
 
         self.loop.start()
 
     def stop(self):
-        logging.info("ServerMaster[{0}]: Stop requested.".format(os.getpid()))
+        if (debug):
+            logging.info("ServerMaster[{0}]: Stop requested.".format(os.getpid()))
 
         for worker in self.worker_procs:
             worker.in_q.put("quit")
@@ -371,7 +375,8 @@ class ServerMaster(object):
         for worker in self.worker_procs:
             worker.join()
 
-        logging.info("ServerMaster[{0}]: Stopped!".format(os.getpid()))
+        if (debug):
+            logging.info("ServerMaster[{0}]: Stopped!".format(os.getpid()))
      
     def handle_error(self, msg, level=logging.ERROR, exc_info=True):
         logging.log(level, "ServerMaster[{0}]: Error: {1}".format(os.getpid(), msg),
@@ -379,7 +384,8 @@ class ServerMaster(object):
         self.stop()
 
     def signal_cb(self, watcher, revents):
-        logging.info("ServerMaster[{0}]: Signal triggered.".format(os.getpid()))
+        if (debug):
+            logging.info("ServerMaster[{0}]: Signal triggered.".format(os.getpid()))
         self.stop()
 
     def io_cb(self, watcher, revents):
@@ -413,7 +419,6 @@ class ServerMaster(object):
     def out_q_cb(self, watcher, revents):
         try:
             val = watcher.data.out_q.get()
-            #val = self.in_q.get(True,interval)
             logging.debug("ServerMaster received outQ event from [%s] data [%s]"\
                     %(watcher.data.name,str(val))) 
             if type(val) == type((1,)):
@@ -428,6 +433,8 @@ class ServerMaster(object):
 
 
 if __name__ == "__main__":
+    if (debug):
+        logging.info("Debugging mode enabled")
     try:
         ip=config.get("OSIRIS","host")
         port=int(config.get("OSIRIS","port"))
