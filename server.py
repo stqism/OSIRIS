@@ -42,12 +42,14 @@ for i in range(len(config.sections())):
         exec_app[config.sections()[i]] = __import__(config.get(config.sections()[i],'mod'))
 
 class app():
+    srv_str = "Server: OSIRIS Mach/4\r\n"
+
     def code(self,int):
         list = { 200: "200 OK", 500: "500 Server error", "ERR": "Unknown server error"}
         try:
             return list[int]
         except:
-            return list["ERR"]
+            return "{0} {1}".format(int,list["ERR"])
 
     def html(self,http_code,buf,head_str=''):
         payload = "HTTP/1.1 {0}\r\n".format(self.code(http_code))
@@ -71,10 +73,13 @@ class app():
             return ln.split(' ',1)[1].split(':',1)[0]
 
     def gen_head(self,dict):
-        head_str = 'Server: OSIRIS Mach/4\r\n'
-        for header, data in dict.iteritems():
-            head_str += "{0}: {1}\r\n".format(header,data)
-        return head_str
+        head_str = self.srv_str
+        try:
+            for header, data in dict.iteritems():
+                head_str += "{0}: {1}\r\n".format(header,data)
+            return head_str
+        except:
+            return head_str
 
     def respond(self,buf):
         gen_head = self.gen_head
@@ -105,11 +110,11 @@ class app():
             try:
                 head_str = gen_head(data['header'])
             except:
-                head_str = ''
+                head_str = self.srv_str
         except:
             code = 500
             msg = "Error parsing data\r\n"
-            head_str = ''
+            head_str = self.srv_str
 
         return self.html(code,msg,head_str)
 
