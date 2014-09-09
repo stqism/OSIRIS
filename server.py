@@ -49,27 +49,16 @@ class app():
         if (head_str):
             payload += head_str
         payload += "Content-Length: {0}\r\n\r\n".format(str(len(buf)))
-        payload += "{0}\r\n".format(buf)
+        payload += buf
         return payload
 
-    def msg_raw(self,buf): #Stolen from https://stackoverflow.com/questions/12605090/how-to-prevent-automatic-escaping-of-special-characters-in-python
-        escape_dict={'\a':r'\a',
-             '\b':r'\b',
-             '\c':r'\c',
-             '\f':r'\f',
-             '\n':r'\n',
-             '\r':r'\r',
-             '\t':r'\t',
-             '\v':r'\v',
-             '\'':r'\'',
-             '\"':r'\"'}
-        new_string=''
-        for char in buf:
-            try: 
-                new_string += escape_dict[char]
-            except KeyError: 
-                new_string += char
-        return new_string
+    def header2dict(self,dict):
+        hdict = { "TYPE": dict.split('\r\n',1)[0].split(' ',1)[0] }
+        real_dict = dict.splitlines()
+
+        for i in range(1, len(real_dict)):
+            hdict[real_dict[i].split(':',1)[0]] = real_dict[i].split(':',1)[1].strip(' ')
+        return hdict
 
     def hostname(self,buf):
         header_ln = re.findall("Host.*$",buf,re.MULTILINE)
@@ -83,31 +72,37 @@ class app():
         return head_str
 
     def respond(self,buf):
-        msg_raw = self.msg_raw
         gen_head = self.gen_head
         hostname = self.hostname(buf)
+        header2dict = self.header2dict
 
         if hostname not in exec_app:
             hostname = "fallback"
             logging.error("Hostname not found, fell to fallback")
 
+            if hostname not in exec_app:
+                logging.error("No fallback found")
+                return self.html(500,"No fallback configured :(\r\n",head_str='')
+
         reload(exec_app[hostname]) #debug only
 
         try:
-            data = exec_app[hostname].reply(buf)
-            msg = msg_raw(data["msg"])
+            buf_head = buf.split('\r\n\r\n',1)[0]
+            buf_body = buf.split('\r\n\r\n',1)[1]
+            payload = { "header": header2dict(buf_head), "body": buf_body }
+            data = exec_app[hostname].reply(payload)
+            msg = data["msg"]
             try:
                 code = data["code"]
             except:
                 code = 200
-
             try:
                 head_str = gen_head(data['header'])
             except:
                 head_str = ''
         except:
             code = 500
-            msg = "Unable to load module :(\r\n"
+            msg = "Error parsing data\r\n"
             head_str = ''
 
         return self.html(code,msg,head_str)
