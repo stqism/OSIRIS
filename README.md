@@ -44,6 +44,13 @@ mod = testsite
 
 Mod is the name of the module loaded, the section name is the hostname to resolve it for. If the hostname requested by the client does not exist a section called fallback (You have to add this) will be used.
 
+Running OSIRIS
+==========
+* First, setup your osiris.conf
+* Install libev 
+* run ``sudo pip install pyev``
+* run ``python server.py``
+
 Writing modules
 ======
 An example module showing off features is in test.py
