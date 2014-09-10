@@ -125,6 +125,14 @@ class app():
             payload = { "header": header2dict(buf_head), "body": buf_body, "ip": addr_real }
             data = exec_app[hostname].reply(payload)
             msg = data["msg"]
+
+            try:
+                temp_opt = data["template"]
+                for entry, temp_opt_list in temp_opt.iteritems(): #super fast, man
+                    msg = re.sub("({.*?" + entry + ".*?})", temp_opt[entry], msg)
+            except:
+                pass
+
             try:
                 code = data["code"]
             except:
