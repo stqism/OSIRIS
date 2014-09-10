@@ -32,9 +32,14 @@ config.readfp(cfile)
 cfile.close
 
 try:
-    debug = config.get("OSIRIS","debug")
+    debug = int(config.get("OSIRIS","debug"))
 except:
     debug = 0
+
+try:
+    proxy = int(config.get("OSIRIS","proxy"))
+except:
+    proxy = 0
 
 exec_app = {}
 for i in range(len(config.sections())):
@@ -72,19 +77,32 @@ class app():
         for ln in header_ln:
             return ln.split(' ',1)[1].split(':',1)[0]
 
+    def ip(self,buf):
+        header_ln = re.findall("X-Real-IP.*$",buf,re.MULTILINE)
+        for ln in header_ln:
+            return ln.split(' ',1)[1].split(':',1)[0]
+
     def gen_head(self,dict):
         head_str = self.srv_str
         try:
             for header, data in dict.iteritems():
                 head_str += "{0}: {1}\r\n".format(header,data)
             return head_str
-        except:
+        except: 
             return head_str
 
-    def respond(self,buf):
+    def respond(self,buf,addy):
         gen_head = self.gen_head
         hostname = self.hostname(buf)
         header2dict = self.header2dict
+
+        if (proxy):
+            addr_real = self.ip(buf)
+            if (addr_real == None):
+                addr_real = addy[0]
+                logging.error("Reverse proxy not found!")
+        else:
+            addr_real = addy[0]
 
         if hostname not in exec_app:
             hostname = "fallback"
@@ -98,9 +116,13 @@ class app():
             reload(exec_app[hostname])
 
         try:
-            buf_head = buf.split('\r\n\r\n',1)[0]
-            buf_body = buf.split('\r\n\r\n',1)[1]
-            payload = { "header": header2dict(buf_head), "body": buf_body }
+            try:
+                buf_head = buf.split('\r\n\r\n',1)[0]
+                buf_body = buf.split('\r\n\r\n',1)[1]
+            except:
+                buf_body = buf
+
+            payload = { "header": header2dict(buf_head), "body": buf_body, "ip": addr_real }
             data = exec_app[hostname].reply(payload)
             msg = data["msg"]
             try:
@@ -111,6 +133,7 @@ class app():
                 head_str = gen_head(data['header'])
             except:
                 head_str = self.srv_str
+
         except:
             code = 500
             msg = "Error parsing data\r\n"
@@ -163,7 +186,7 @@ class Connection(object):
             #logging.debug("[%s:%d] Received data: %s"%(self.parent.name,self.cnxn_id,buf))
             self.buf += buf
 
-            self.resp = app().respond(buf)
+            self.resp = app().respond(buf,self.remote_address)
 
             self.reset(pyev.EV_READ | pyev.EV_WRITE)
 
