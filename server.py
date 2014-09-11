@@ -6,6 +6,7 @@ import multiprocessing
 from multiprocessing.reduction import reduce_handle, rebuild_handle
 import Queue
 import os
+import sys
 import re
 import socket
 import signal
@@ -41,6 +42,7 @@ try:
 except:
     proxy = 0
 
+sys.path.append('./app')
 exec_app = {}
 for i in range(len(config.sections())):
     if config.sections()[i] != "OSIRIS":
@@ -129,7 +131,7 @@ class app():
                msg_file = open(data["file"], 'r')
                msg = msg_file.read()
                msg_file.close()
-            except: 
+            except:
                 msg = data["msg"]
 
             try:

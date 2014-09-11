@@ -42,7 +42,7 @@ Dealing with hostnames
 mod = testsite
 ```
 
-Mod is the name of the module loaded, the section name is the hostname to resolve it for. If the hostname requested by the client does not exist a section called fallback (You have to add this) will be used.
+Mod is the name of the module loaded, the section name is the hostname to resolve it for. Mod files are python files located in the ``app`` folder. If the hostname requested by the client does not exist a section called fallback (You have to add this) will be used.
 
 Running OSIRIS
 ==========
