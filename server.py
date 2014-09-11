@@ -44,9 +44,11 @@ except:
 
 sys.path.append('./app')
 exec_app = {}
+host_mod = {}
 for i in range(len(config.sections())):
     if config.sections()[i] != "OSIRIS":
         exec_app[config.sections()[i]] = __import__(config.get(config.sections()[i],'mod'))
+        host_mod[config.sections()[i]] = config.get(config.sections()[i],'mod')
 
 class app():
     srv_str = "Server: OSIRIS Mach/4\r\n"
@@ -128,9 +130,10 @@ class app():
             data = exec_app[hostname].reply(payload)
 
             try:
-               msg_file = open(data["file"], 'r')
-               msg = msg_file.read()
-               msg_file.close()
+                file_path = "app/{0}/{1}".format(host_mod[hostname],data["file"])
+                msg_file = open(file_path, 'r')
+                msg = msg_file.read()
+                msg_file.close()
             except:
                 msg = data["msg"]
 
