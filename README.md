@@ -53,4 +53,4 @@ Running OSIRIS
 
 Writing modules
 ======
-An example module showing off features is in test.py
+An example module showing off features is in ``app/testapp.py``
