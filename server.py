@@ -42,13 +42,15 @@ try:
 except:
     proxy = 0
 
-sys.path.append('./app')
+sys.path.append('app')
 exec_app = {}
 host_mod = {}
 for i in range(len(config.sections())):
     if config.sections()[i] != "OSIRIS":
-        exec_app[config.sections()[i]] = __import__(config.get(config.sections()[i],'mod'))
-        host_mod[config.sections()[i]] = config.get(config.sections()[i],'mod')
+        _domain = config.sections()[i]
+        _mod_name = config.get(config.sections()[i],'mod')
+        exec_app[_domain] = __import__(_mod_name)
+        host_mod[_domain] = _mod_name
 
 class app():
     srv_str = "Server: OSIRIS Mach/4\r\n"
