@@ -121,7 +121,8 @@ class app():
         if (debug):
             reload(exec_app[hostname])
 
-        try:
+        #try:
+        if True:
             try:
                 buf_head = buf.split('\r\n\r\n',1)[0]
                 buf_body = buf.split('\r\n\r\n',1)[1]
@@ -156,7 +157,8 @@ class app():
             except:
                 head_str = self.srv_str
 
-        except:
+        #except:
+        else:
             code = 500
             msg = "Error parsing data\r\n"
             head_str = self.srv_str
@@ -175,6 +177,7 @@ class Connection(object):
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.setblocking(0)
         self.sock.settimeout(0.5)
+        self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
         self.buf = ""
 
@@ -197,7 +200,10 @@ class Connection(object):
     def handle_read(self):
         buf = ""
         try:
-            buf = self.sock.recv(2048)
+            buf = self.sock.recv(4096)
+            if (len(buf) == 0):
+                self.handle_error("No socket data", logging.DEBUG, False)
+                return
         except Exception as err:
             if err.args[0] not in NONBLOCKING:
                 self.handle_error("error reading from {0}".format(self.sock))
@@ -205,7 +211,6 @@ class Connection(object):
             #else:
             #    return
         if len(buf):
-            #logging.debug("[%s:%d] Received data: %s"%(self.parent.name,self.cnxn_id,buf))
             self.buf += buf
 
             self.resp = app().respond(buf,self.remote_address)
@@ -326,7 +331,7 @@ class ServerMaster(object):
     def __init__(self, 
             start_server_ip="127.0.0.1",
             start_server_port=5000,
-            num_server_workers=1):
+            num_server_workers=8):
 
         self.start_server_ip = start_server_ip
         self.start_server_port = start_server_port
@@ -457,9 +462,9 @@ class ServerMaster(object):
                     self.next_worker += 1
                     if self.next_worker >= self.num_server_workers:
                         self.next_worker = 0
-
         except Exception:
             self.handle_error("Error accepting connection")
+            return
 
     def out_q_cb(self, watcher, revents):
         try:
