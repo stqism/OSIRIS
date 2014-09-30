@@ -17,7 +17,7 @@ def reply(msg):
 	"""
 	if msg['header']['PATH'] == '/test.html': #Starts searching in app/{module name}/
 		return { "code": 200, "file": "test.html", "template": {"name.first": "Test", "name.last": "user"} }
-	}
+	
 	else:
 		msg2srv = "Hello, {0}!\r\nYour IP is {1}\r\nYour name is {{name.first}} {{ name.last }}!".format(msg['header']['User-Agent'],msg['ip'])
 		send = { "code": 200, "msg": msg2srv, "template": {"name.first": "Test", "name.last": "user"} }
