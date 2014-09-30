@@ -10,7 +10,7 @@
 
 RUNAS=root
 CONFIG=/usr/etc/osiris
-SCRIPT'osirisd --config=$CONFIG'
+SCRIPT='osirisd --config=$CONFIG'
 
 PIDFILE=$CONFIG/pid
 LOGFILE=/var/log/osiris.log
