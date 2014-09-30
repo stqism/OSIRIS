@@ -25,12 +25,16 @@ try:
         config_dir = sys.argv[1].split('=',1)[1]
         if config_dir == '':
             raise conf("No path specified")
+        else:
+            if not os.path.isdir(config_dir):
+                print "config path not found"
+                raise
     else:
         raise
 except:
     raise conf("osirisd takes a single argument, --config=/path/to/config/dir")
 
-tmp_pid = open(config_dir + '/pid',"w",0)
+tmp_pid = open(os.path.join(config_dir,'pid'),"w",0)
 tmp_pid.write(str(os.getpid()))
 tmp_pid.close
 
@@ -44,8 +48,8 @@ logging.basicConfig(level=logging.INFO)
 
 STOPSIGNALS = (signal.SIGINT, signal.SIGTERM)
 NONBLOCKING = (errno.EAGAIN, errno.EWOULDBLOCK)
-    
-cfile = open(config_dir + '/osiris.conf', 'r')   
+
+cfile = open(os.path.join(config_dir,'osiris.conf'), 'r')
 config = ConfigParser.ConfigParser()
 config.readfp(cfile)
 cfile.close
@@ -157,7 +161,7 @@ class app():
             data = exec_app[hostname].reply(payload)
 
             try:
-                file_path = "app/{0}/{1}".format(host_mod[hostname],data["file"])
+                file_path = os.path.join('app',host_mod[hostname],data["file"])
                 msg_file = open(file_path, 'r')
                 msg = unicode(msg_file.read())
                 msg_file.close()
