@@ -19,6 +19,9 @@ Running OSIRIS
 * Install libev 
 * run ``sudo pip install pyev``
 * run ``sudo bash install.sh /usr``
+* run ``sudo service osiris start``
+ 
+OSIRIS is now fully installed, its config folder is at ``/usr/etc/osiris``
 
 Setting up the config file
 ==========================
@@ -50,6 +53,7 @@ mod = testsite
 
 Mod is the name of the module loaded, the section name is the hostname to resolve it for. Mod files are python files located in the ``app`` folder. If the hostname requested by the client does not exist a section called fallback (You have to add this) will be used.
 
+If you use templeting please make a folder with the name of the app without .py. Such as, ``app/testapp``
 
 Writing modules
 ======
