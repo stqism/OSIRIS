@@ -8,9 +8,9 @@
 # Description:       OSIRIS application server daemon
 ### END INIT INFO
 
-SCRIPT=osirisd
-RUNAS=osiris
+RUNAS=root
 CONFIG=/usr/etc/osiris
+SCRIPT'osirisd --config=$CONFIG'
 
 PIDFILE=$CONFIG/pid
 LOGFILE=/var/log/osiris.log
