@@ -18,7 +18,7 @@ Running OSIRIS
 ==========
 * Install libev 
 * run ``sudo pip install pyev``
-* run ``sudo bash install.sh /usr``
+* run ``sudo bash install.sh``
 * run ``sudo service osiris start``
  
 OSIRIS is now fully installed, its config folder is at ``/usr/etc/osiris``
