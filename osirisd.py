@@ -160,12 +160,19 @@ class app():
             payload = { "header": header2dict(buf_head), "body": buf_body, "ip": addr_real, "runonce": run_once[hostname] }
             data = exec_app[hostname].reply(payload)
 
-            try:
+            if "file" in data:
                 file_path = os.path.join('app',host_mod[hostname],data["file"])
-                msg_file = open(file_path, 'r')
-                msg = unicode(msg_file.read())
-                msg_file.close()
-            except:
+                print file_path
+                if os.path.isfile(file_path):
+                    msg_file = open(file_path, 'r')
+                    msg = unicode(msg_file.read())
+                    msg_file.close()
+
+                else:
+                    msg = "Attempted to template a file that does not exist"
+                    data["code"] = 500
+
+            else:
                 msg = data["msg"]
 
             try:
