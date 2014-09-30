@@ -2,7 +2,7 @@ mkdir -p $1/etc/osiris/app
 cp osirisd $1/bin/
 cp osiris.sh /etc/init.d/osiris
 cp osiris.conf $1/etc/osiris/
-cp -r testapp* $1/etc/osiris/app/
+cp -r app/testapp* $1/etc/osiris/app/
 chmod +x $1/bin/osirisd
 chmod +x /etc/init.d/osiris
 
