@@ -20,7 +20,7 @@ start() {
     echo 'Service already running' >&2
     return 1
   fi
-  echo 'Starting serviceâ€¦' >&2
+  echo 'Starting service' >&2
   local CMD="$SCRIPT &> \"$LOGFILE\" & echo \$!"
   su -c "$CMD" $RUNAS > "$PIDFILE"
   echo 'Service started' >&2
@@ -31,7 +31,7 @@ stop() {
     echo 'Service not running' >&2
     return 1
   fi
-  echo 'Stopping serviceâ€¦' >&2
+  echo 'Stopping service' >&2
   kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
   echo 'Service stopped' >&2
 }
@@ -42,9 +42,6 @@ case "$1" in
     ;;
   stop)
     stop
-    ;;
-  uninstall)
-    uninstall
     ;;
   retart)
     stop
