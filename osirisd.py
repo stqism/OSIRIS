@@ -162,15 +162,20 @@ class app():
 
             if "file" in data:
                 file_path = os.path.join('app',host_mod[hostname],data["file"])
-                print file_path
+                
                 if os.path.isfile(file_path):
                     msg_file = open(file_path, 'r')
                     msg = unicode(msg_file.read())
                     msg_file.close()
 
                 else:
-                    msg = "Attempted to template a file that does not exist"
+                    if (debug):
+                        msg = "Attempted to template a file that does not exist"
+                    else:
+                        msg = "An error occured with the application"
+
                     data["code"] = 500
+                    print file_path + " does not exist"
 
             else:
                 msg = data["msg"]
