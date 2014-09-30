@@ -13,7 +13,13 @@ It supports a couple killer features, such as
 * Access to full headers and sent data
 * Ability to send custom headers
 * Serve data directly or serve files in a single LoC
- 
+
+Running OSIRIS
+==========
+* Install libev 
+* run ``sudo pip install pyev``
+* run ``sudo bash install.sh /usr``
+
 Setting up the config file
 ==========================
 First, make your config file
@@ -44,12 +50,6 @@ mod = testsite
 
 Mod is the name of the module loaded, the section name is the hostname to resolve it for. Mod files are python files located in the ``app`` folder. If the hostname requested by the client does not exist a section called fallback (You have to add this) will be used.
 
-Running OSIRIS
-==========
-* First, setup your osiris.conf
-* Install libev 
-* run ``sudo pip install pyev``
-* run ``bash install.sh /usr``
 
 Writing modules
 ======
