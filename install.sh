@@ -1,9 +1,9 @@
-mkdir -p $1/etc/osiris/app
-cp osirisd $1/bin/
+mkdir -p /etc/osiris/app
+cp osirisd /bin/
 cp osiris.sh /etc/init.d/osiris
-cp osiris.conf $1/etc/osiris/
-cp -r app/testapp* $1/etc/osiris/app/
-chmod +x $1/bin/osirisd
+yes n | cp -i osiris.conf /etc/osiris/
+yes n | cp -ir app/testapp* /etc/osiris/app/
+chmod +x /usr/bin/osirisd
 chmod +x /etc/init.d/osiris
 
 echo Please add the user osiris before running, settings for launching the daemon are in /etc/init.d/osiris

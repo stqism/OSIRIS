@@ -9,7 +9,7 @@
 ### END INIT INFO
 
 RUNAS=root
-CONFIG=/usr/etc/osiris
+CONFIG=/etc/osiris
 SCRIPT=osirisd
 
 PIDFILE=$CONFIG/pid
