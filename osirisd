@@ -1,5 +1,4 @@
-#!/bin/python
-#Praise the libev sample
+#!/usr/bin/env python
 
 import time
 import multiprocessing
@@ -8,6 +7,7 @@ import Queue
 import os
 import sys
 import re
+import struct
 import socket
 import signal
 import errno
@@ -15,6 +15,24 @@ import logging
 import sys
 import pyev
 import ConfigParser
+
+class conf(Exception):
+    def __str__(self):
+        return repr(self.value)
+
+try:
+    if sys.argv[1].startswith('--config='):
+        config_dir = sys.argv[1].split('=',1)[1]
+        if config_dir == '':
+            raise conf("No path specified")
+    else:
+        raise
+except:
+    raise conf("osirisd takes a single argument, --config=/path/to/config/dir")
+
+tmp_pid = open(config_dir + '/pid',"w",0)
+tmp_pid.write(str(os.getpid()))
+tmp_pid.close
 
 try:
     import resource
@@ -27,7 +45,7 @@ logging.basicConfig(level=logging.INFO)
 STOPSIGNALS = (signal.SIGINT, signal.SIGTERM)
 NONBLOCKING = (errno.EAGAIN, errno.EWOULDBLOCK)
     
-cfile = open('osiris.conf', 'r')   
+cfile = open(config_dir + '/osiris.conf', 'r')   
 config = ConfigParser.ConfigParser()
 config.readfp(cfile)
 cfile.close
@@ -42,15 +60,21 @@ try:
 except:
     proxy = 0
 
-sys.path.append('app')
+sys.path.append(config_dir + '/app')
 exec_app = {}
 host_mod = {}
+run_once = {}
 for i in range(len(config.sections())):
     if config.sections()[i] != "OSIRIS":
         _domain = config.sections()[i]
         _mod_name = config.get(config.sections()[i],'mod')
         exec_app[_domain] = __import__(_mod_name)
         host_mod[_domain] = _mod_name
+        try:
+            run_once[_domain] = exec_app[_domain].runonce()
+        except:
+            run_once[_domain] = 0
+
 
 class app():
     srv_str = "Server: OSIRIS Mach/4\r\n"
@@ -129,13 +153,13 @@ class app():
             except:
                 buf_body = buf
 
-            payload = { "header": header2dict(buf_head), "body": buf_body, "ip": addr_real }
+            payload = { "header": header2dict(buf_head), "body": buf_body, "ip": addr_real, "runonce": run_once[hostname] }
             data = exec_app[hostname].reply(payload)
 
             try:
                 file_path = "app/{0}/{1}".format(host_mod[hostname],data["file"])
                 msg_file = open(file_path, 'r')
-                msg = msg_file.read()
+                msg = unicode(msg_file.read())
                 msg_file.close()
             except:
                 msg = data["msg"]
@@ -178,6 +202,7 @@ class Connection(object):
         self.sock.setblocking(0)
         self.sock.settimeout(0.5)
         self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 0))
 
         self.buf = ""
 
@@ -200,7 +225,7 @@ class Connection(object):
     def handle_read(self):
         buf = ""
         try:
-            buf = self.sock.recv(4096)
+            buf = unicode(self.sock.recv(4096))
             if (len(buf) == 0):
                 self.handle_error("No socket data", logging.DEBUG, False)
                 return
@@ -212,7 +237,6 @@ class Connection(object):
             #    return
         if len(buf):
             self.buf += buf
-
             self.resp = app().respond(buf,self.remote_address)
 
             self.reset(pyev.EV_READ | pyev.EV_WRITE)
@@ -236,10 +260,16 @@ class Connection(object):
             self.handle_read()
         elif revents & pyev.EV_WRITE:
             self.handle_write()
+            self.close()
         else:
             logging.debug("[%s:%d] io_cb called with unknown event %s"%(self.parent.name,self.cnxn_id,str(revents)))
+            self.close()
 
     def close(self):
+        try:
+            self.sock.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
         self.sock.close()
         self.watcher.stop()
         self.watcher = None

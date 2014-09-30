@@ -49,7 +49,7 @@ Running OSIRIS
 * First, setup your osiris.conf
 * Install libev 
 * run ``sudo pip install pyev``
-* run ``python server.py``
+* run ``bash install.sh /usr``
 
 Writing modules
 ======
