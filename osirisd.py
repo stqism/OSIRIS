@@ -178,18 +178,20 @@ class app():
             else:
                 msg = data["msg"]
 
-            try:
+            if "template" in data:
                 temp_opt = data["template"]
-                for entry, temp_opt_list in temp_opt.iteritems(): #super fast, man
-                    msg = re.sub("({{.*?" + entry + ".*?}})", temp_opt[entry], msg)
-                    msg = re.sub("({.*?" + entry + ".*?})", temp_opt[entry], msg)
-            except:
-                pass
+                try:
+                    for entry, temp_opt_list in temp_opt.iteritems(): #super fast, man
+                        msg = re.sub("({{.*?" + entry + ".*?}})", temp_opt[entry], msg)
+                        msg = re.sub("({.*?" + entry + ".*?})", temp_opt[entry], msg)
+                except:
+                    pass
 
-            try:
+            if "code" in data:
                 code = data["code"]
-            except:
+            else:
                 code = 200
+
             try:
                 head_str = gen_head(data['header'])
             except:
