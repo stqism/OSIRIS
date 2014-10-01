@@ -1,4 +1,8 @@
 
+def runonce():
+	#This is only ran when OSIRIS is restarted, unlike normal live updates
+	return "secureauthkey"
+
 def reply(msg):
 	"""
 	code, header, and template are optional
@@ -19,7 +23,7 @@ def reply(msg):
 		return { "code": 200, "file": "test.html", "template": {"name.first": "Test", "name.last": "user"} }
 	
 	else:
-		msg2srv = "Hello, {0}!\r\nYour IP is {1}\r\nYour name is {{name.first}} {{ name.last }}!".format(msg['header']['User-Agent'],msg['ip'])
+		msg2srv = "Hello, {0}!\r\nYour IP is {1}\r\nYour name is {{name.first}} {{ name.last }}!\r\nYour key is {2}".format(msg['header']['User-Agent'],msg['ip'],msg['runonce'])
 		send = { "code": 200, "msg": msg2srv, "template": {"name.first": "Test", "name.last": "user"} }
 
 		return send
