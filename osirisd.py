@@ -27,7 +27,7 @@ try:
             raise conf("No path specified")
         else:
             if not os.path.isdir(config_dir):
-                print "config path not found"
+                logging.error("config path not found")
                 raise
     else:
         raise
@@ -111,11 +111,6 @@ class app():
         for ln in header_ln:
             return ln.split(' ',1)[1].split(':',1)[0]
 
-    def ip(self,buf):
-        header_ln = re.findall("X-Real-IP.*$",buf,re.MULTILINE)
-        for ln in header_ln:
-            return ln.split(' ',1)[1].split(':',1)[0]
-
     def gen_head(self,dict):
         head_str = self.srv_str
         try:
@@ -129,14 +124,6 @@ class app():
         gen_head = self.gen_head
         hostname = self.hostname(buf)
         header2dict = self.header2dict
-
-        if (proxy):
-            addr_real = self.ip(buf)
-            if (addr_real == None):
-                addr_real = addy[0]
-                logging.error("Reverse proxy not found!")
-        else:
-            addr_real = addy[0]
 
         if hostname not in exec_app:
             hostname = "fallback"
@@ -157,7 +144,18 @@ class app():
             except:
                 buf_body = buf
 
-            payload = { "header": header2dict(buf_head), "body": buf_body, "ip": addr_real, "runonce": run_once[hostname] }
+            app_header = header2dict(buf_head)
+
+            if (proxy):
+                if 'X-Real-IP' in app_header:
+                    addr_real = app_header['X-Real-IP']
+                else:
+                    addr_real = addy[0]
+                    logging.error("Reverse proxy not found!")
+            else:
+                addr_real = addy[0]
+
+            payload = { "header": app_header, "body": buf_body, "ip": addr_real, "runonce": run_once[hostname] }
             data = exec_app[hostname].reply(payload)
 
             if "file" in data:
@@ -175,7 +173,7 @@ class app():
                         msg = "An error occured with the application"
 
                     data["code"] = 500
-                    print file_path + " does not exist"
+                    logging.error(file_path + " does not exist")
 
             else:
                 msg = data["msg"]
