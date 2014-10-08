@@ -213,7 +213,7 @@ class app:
 
 						# msg = msg.strip(' ').replace('{' + entry + '}', temp_opt[entry]) 3 times faster than re.sub, breaks on { slow }
 
-						msg = re.sub('({.*?' +'.*?})',
+						msg = re.sub('({.*?' + entry +'.*?})',
 								temp_opt[entry], msg)
 				except:
 					pass
