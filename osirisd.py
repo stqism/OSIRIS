@@ -135,7 +135,7 @@ class app:
 
 	def respond(self, buf, addy):
 		gen_head = self.gen_head
-		hostname = self.hostname(buf)
+		hostname = self.hostname(buf).lower().strip()
 		header2dict = self.header2dict
 
 		if hostname not in exec_app:
