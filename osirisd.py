@@ -122,8 +122,7 @@ class app:
 
 	def hostname(self, buf):
 		header_ln = re.findall('Host.*$', buf, re.MULTILINE)
-		for ln in header_ln:
-			return ln.split(' ', 1)[1].split(':', 1)[0]
+		return header_ln[0].split(' ', 1)[1].split(':', 1)[0]
 
 	def gen_head(self, dict):
 		head_str = self.srv_str
@@ -214,7 +213,7 @@ class app:
 
 						# msg = msg.strip(' ').replace('{' + entry + '}', temp_opt[entry]) 3 times faster than re.sub, breaks on { slow }
 
-						msg = re.sub('({.*?' + entry + '.*?})',
+						msg = re.sub('({.*?' +'.*?})',
 								temp_opt[entry], msg)
 				except:
 					pass
@@ -298,7 +297,7 @@ class Connection(object):
 				return
 		except Exception, err:
 			if err.args[0] not in NONBLOCKING:
-				self.handle_error('error reading from {0}'.format(self.sock))
+				self.handle_error('error reading from %s' % (self.sock))
 				return
 
 			# else:
@@ -323,7 +322,7 @@ class Connection(object):
 				sent = self.sock.send(self.resp)
 		except socket.error, err:
 			if err.args[0] not in NONBLOCKING:
-				self.handle_error('error writing to {0}'.format(self.sock))
+				self.handle_error('error writing to %s' % (self.sock))
 		else:
 			self.reset(pyev.EV_READ)
 
@@ -518,12 +517,9 @@ class ServerMaster(object):
 		self.next_worker = 0
 
 	def start(self):
-		for watcher in self.sig_watchers:
-			watcher.start()
-		for watcher in self.q_watchers:
-			watcher.start()
-		for watcher in self.socket_watchers:
-			watcher.start()
+		[watcher.start() for watcher in self.sig_watchers]
+		[watcher.start() for watcher in self.q_watchers]
+		[watcher.start() for watcher in self.socket_watchers]
 
 		self.listen_sock.listen(socket.SOMAXCONN)
 
@@ -539,22 +535,19 @@ class ServerMaster(object):
 		if debug:
 			logging.info('ServerMaster[{0}]: Stop requested.'.format(os.getpid()))
 
-		for worker in self.worker_procs:
-			worker.in_q.put('quit')
+		[worker.in_q.put('quit') for worker in self.worker_procs]
 
-		while self.sig_watchers:
-			self.sig_watchers.pop().stop()
-		while self.q_watchers:
-			self.q_watchers.pop().stop()
-		while self.socket_watchers:
-			self.socket_watchers.pop().stop()
+		[self.sig_watchers.pop().stop() in self.sig_watchers]
+
+		[self.q_watchers.pop().stop() in self.q_watchers]
+
+		[self.socket_watchers.pop().stop() in self.socket_watchers]
 
 		self.loop.stop(pyev.EVBREAK_ALL)
 
 		self.listen_sock.close()
 
-		for worker in self.worker_procs:
-			worker.join()
+		[worker.join() for worker in self.worker_procs]
 
 		if debug:
 			logging.info('ServerMaster[{0}]: Stopped!'.format(os.getpid()))
