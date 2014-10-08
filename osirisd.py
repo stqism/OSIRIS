@@ -84,17 +84,17 @@ class app():
     srv_str = "Server: OSIRIS Mach/4\r\n"
 
     def code(self,int):
-        list = { 200: "200 OK", 500: "500 Server error", "ERR": "Unknown server error"}
-        try:
+        list = { 200: "200 OK", 500: "500 Server error" }
+        if int in list:
             return list[int]
-        except:
-            return "{0} {1}".format(int,list["ERR"])
+        else:
+            return "%i Unknown server error" % int
 
     def html(self,http_code,buf,head_str=''):
-        payload = "HTTP/1.1 {0}\r\n".format(self.code(http_code))
+        payload = "HTTP/1.1 %s\r\n" % (self.code(http_code))
         if (head_str):
             payload += head_str
-        payload += "Content-Length: {0}\r\n\r\n".format(str(len(buf)))
+        payload += "Content-Length: %s\r\n\r\n" % (len(buf))
         payload += buf
         return payload
 
@@ -102,8 +102,8 @@ class app():
         hdict = { "TYPE": dict.split('\r\n',1)[0].split(' ',1)[0], "PATH": dict.split('\r\n',1)[0].split(' ',2)[1] }
         real_dict = dict.splitlines()
 
-        for i in range(1, len(real_dict)):
-            hdict[real_dict[i].split(':',1)[0]] = real_dict[i].split(':',1)[1].strip(' ')
+        for i in xrange(1, len(real_dict)):
+            hdict[real_dict[i].split(':',1)[0]] = (real_dict[i].split(':',1)[1].strip(' '))
         return hdict
 
     def hostname(self,buf):
@@ -115,7 +115,7 @@ class app():
         head_str = self.srv_str
         try:
             for header, data in dict.iteritems():
-                head_str += "{0}: {1}\r\n".format(header,data)
+                head_str += "%s: %s\r\n" % (header,data)
             return head_str
         except: 
             return head_str
@@ -181,8 +181,10 @@ class app():
             if "template" in data:
                 temp_opt = data["template"]
                 try:
-                    for entry, temp_opt_list in temp_opt.iteritems(): #super fast, man
-                        msg = re.sub("({{.*?" + entry + ".*?}})", temp_opt[entry], msg)
+                    msg = msg.replace('{{','{')
+                    msg = msg.replace('}}','}')
+                    for entry, temp_opt_list in temp_opt.iteritems():
+                        #msg = msg.strip(' ').replace('{' + entry + '}', temp_opt[entry]) 3 times faster than re.sub, breaks on { slow }
                         msg = re.sub("({.*?" + entry + ".*?})", temp_opt[entry], msg)
                 except:
                     pass
