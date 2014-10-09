@@ -38,6 +38,8 @@ except:
 	raise conf('osirisd takes a single argument, --config=/path/to/config/dir'
 			   )
 
+config_dir = config_dir
+
 tmp_pid = open(os.path.join(config_dir, 'pid'), 'w', 0)
 tmp_pid.write(str(os.getpid()))
 tmp_pid.close
@@ -85,7 +87,7 @@ for i in range(len(config.sections())):
 
 
 class app:
-
+	global config_dir
 	srv_str = 'Server: OSIRIS Mach/4\r\n'
 
 	def code(self, int):
@@ -134,8 +136,9 @@ class app:
 			return head_str
 
 	def respond(self, buf, addy):
+		global config_dir
 		gen_head = self.gen_head
-		hostname = self.hostname(buf).lower().strip()
+		hostname = self.hostname(buf).lower().strip()	
 		header2dict = self.header2dict
 
 		if hostname not in exec_app:
@@ -183,7 +186,7 @@ class app:
 			data = exec_app[hostname].reply(payload)
 
 			if 'file' in data:
-				file_path = os.path.join('app', host_mod[hostname],
+				file_path = 	os.path.join(config_dir,'app', host_mod[hostname],
 						data['file'])
 
 				if os.path.isfile(file_path):
