@@ -21,7 +21,7 @@ Running OSIRIS
 * run ``sudo bash install.sh``
 * run ``sudo service osiris start``
  
-OSIRIS is now fully installed, its config folder is at ``/usr/etc/osiris``
+OSIRIS is now fully installed, its config folder is at ``/etc/osiris``
 
 Setting up the config file
 ==========================
