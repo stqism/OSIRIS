@@ -185,6 +185,12 @@ class app:
 				}
 			data = exec_app[hostname].reply(payload)
 
+			if "runonce" in data:
+				try:
+					run_once[hostname] = exec_app[hostname].runonce()
+				except:
+					run_once[hostname] = 0
+
 			if 'file' in data:
 				file_path = 	os.path.join(config_dir,'app', host_mod[hostname],
 						data['file'])
