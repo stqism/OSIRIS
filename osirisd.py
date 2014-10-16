@@ -74,6 +74,7 @@ sys.path.append(config_dir + '/app')
 exec_app = {}
 host_mod = {}
 run_once = {}
+depend_app = {}
 for i in range(len(config.sections())):
 	if config.sections()[i] != 'OSIRIS':
 		_domain = config.sections()[i]
@@ -84,6 +85,12 @@ for i in range(len(config.sections())):
 			run_once[_domain] = exec_app[_domain].runonce()
 		except:
 			run_once[_domain] = 0
+		try:
+			depend_app[_domain] = {}
+			for dep in exec_app[_domain].depends():
+				depend_app[_domain][dep] = __import__(dep)
+		except:
+			depend_app[_domain] = 0
 
 
 class app:
@@ -182,6 +189,7 @@ class app:
 				'body': buf_body,
 				'ip': addr_real,
 				'runonce': run_once[hostname],
+				'depends': depend_app[hostname],
 				}
 			data = exec_app[hostname].reply(payload)
 
@@ -190,6 +198,19 @@ class app:
 					run_once[hostname] = exec_app[hostname].runonce()
 				except:
 					run_once[hostname] = 0
+
+			if "modload" in data:
+					for dep in data['modload']:
+						try:
+							reload(depend_app[_domain][dep])
+						except:
+							try:
+								depend_app[_domain][dep] = __import__(dep)
+							except:
+								depend_app[_domain][dep] = 0
+
+			if "reload" in data:
+				reload(exec_app[hostname])
 
 			if 'file' in data:
 				file_path = 	os.path.join(config_dir,'app', host_mod[hostname],

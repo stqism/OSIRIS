@@ -2,6 +2,8 @@
 def runonce():
 	#This is only ran when OSIRIS is restarted, unlike normal live updates
 	return "secureauthkey"
+def depends():
+	return ['testmodule'] #this is list of modules to import from app
 
 def reply(msg):
 	"""
@@ -9,6 +11,11 @@ def reply(msg):
 	header is another json dict thing
 	template is another, but entries in the msg called (or in the file passed) {{ something }} will get replaced with the value
 	If you don't pass msg you can pass the path to a file with file:, if you do both file has higher priority
+
+	'runonce':1 being added causes it to re-run the runonce function
+	'reload':1 being added causes the current app to be reloaded
+	'modload':[list] being added causes it to import the modules listed
+
 	Passes object with the body and headers
 	headers come in an object called header, keys are names
 	body is the posted data
@@ -23,7 +30,7 @@ def reply(msg):
 		return { "code": 200, "file": "test.html", "template": {"name.first": "Test", "name.last": "user"} }
 	
 	else:
-		msg2srv = "Hello, {0}!\r\nYour IP is {1}\r\nYour name is {{name.first}} {{ name.last }}!\r\nYour key is {2}".format(msg['header']['User-Agent'],msg['ip'],msg['runonce'])
-		send = { "code": 200, "msg": msg2srv, "template": {"name.first": "Test", "name.last": "user"} }
+		msg2srv = "Hello, {0}!\r\nYour IP is {1}\r\nYour name is {{name.first}} {{ name.last }}!\r\nYour key is {2} and {3}".format(msg['header']['User-Agent'],msg['ip'],msg['runonce'],msg['depends']['testmodule'].test())
+		send = { "code": 200, "msg": msg2srv, "template": {"name.first": "Test", "name.last": "user"}, 'modload': ['testmodule'], 'reload':1 }
 
 		return send
