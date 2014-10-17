@@ -7,6 +7,7 @@ import Queue
 import os
 import sys
 import re
+import time
 import struct
 import socket
 import signal
@@ -95,7 +96,7 @@ for i in range(len(config.sections())):
 
 class app:
 	global config_dir
-	srv_str = 'Server: OSIRIS Mach/4\r\n'
+	srv_str = 'Server: OSIRIS Mach/4\r\nDate: %s\r\nConnection: close\r\n' % time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
 
 	def code(self, int):
 		list = {200: '200 OK', 500: '500 Server error'}
@@ -218,7 +219,7 @@ class app:
 
 				if os.path.isfile(file_path):
 					msg_file = open(file_path, 'r')
-					msg = unicode(msg_file.read())
+					msg = str(msg_file.read())
 					msg_file.close()
 				else:
 
