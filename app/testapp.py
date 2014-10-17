@@ -15,6 +15,8 @@ def reply(msg):
 	'runonce':1 being added causes it to re-run the runonce function
 	'reload':1 being added causes the current app to be reloaded
 	'modload':[list] being added causes it to import the modules listed
+	'type' optionally accepts a mimetype used in the Content-Type header
+	If no type is passed it logically figures it out based on path or falls back to text/html
 
 	Passes object with the body and headers
 	headers come in an object called header, keys are names
@@ -31,6 +33,6 @@ def reply(msg):
 	
 	else:
 		msg2srv = "Hello, {0}!\r\nYour IP is {1}\r\nYour name is {{name.first}} {{ name.last }}!\r\nYour key is {2} and {3}".format(msg['header']['User-Agent'],msg['ip'],msg['runonce'],msg['depends']['testmodule'].test())
-		send = { "code": 200, "msg": msg2srv, "template": {"name.first": "Test", "name.last": "user"}, 'modload': ['testmodule'], 'reload':1 }
+		send = { "code": 200, "msg": msg2srv, "template": {"name.first": "Test", "name.last": "user"}, 'modload': ['testmodule'], 'reload':1, 'type': 'text/html' }
 
 		return send

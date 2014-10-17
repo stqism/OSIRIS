@@ -8,6 +8,7 @@ import os
 import sys
 import re
 import time
+import mimetypes
 import struct
 import socket
 import signal
@@ -96,7 +97,8 @@ for i in range(len(config.sections())):
 
 class app:
 	global config_dir
-	srv_str = 'Server: OSIRIS Mach/4\r\nDate: %s\r\nConnection: close\r\n' % time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
+	srv_str = 'Server: OSIRIS Mach/4\r\n'
+	srv_str += 'Connection: close\r\n'
 
 	def code(self, int):
 		list = {200: '200 OK', 500: '500 Server error'}
@@ -148,6 +150,7 @@ class app:
 		gen_head = self.gen_head
 		hostname = self.hostname(buf).lower().strip()	
 		header2dict = self.header2dict
+		self.srv_str += 'Date: %s\r\n' % time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime())
 
 		if hostname not in exec_app:
 			hostname = 'fallback'
@@ -258,6 +261,19 @@ class app:
 				head_str = gen_head(data['header'])
 			except:
 				head_str = self.srv_str
+
+			if "type" in data:
+				mime = data["type"]
+			else:
+				if code == 200:
+					mime = mimetypes.guess_type(payload['header']['PATH'])[0]
+					if mime == None:
+						mime = 'text/html'
+				else:
+					mime = 'text/html'
+
+			self.srv_str += 'Content-Type: %s\r\n' % (mime)
+
 		else:
 
 		# except:
