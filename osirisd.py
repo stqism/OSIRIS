@@ -262,7 +262,6 @@ class app:
 			else:
 				if code == 200:
 					mime = mimetypes.guess_type(payload['header']['PATH'])[0]
-					print mime
 					if mime == None:
 						mime = 'text/html'
 				else:
