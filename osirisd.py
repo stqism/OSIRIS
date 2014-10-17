@@ -257,16 +257,12 @@ class app:
 			else:
 				code = 200
 
-			try:
-				head_str = gen_head(data['header'])
-			except:
-				head_str = self.srv_str
-
 			if "type" in data:
 				mime = data["type"]
 			else:
 				if code == 200:
 					mime = mimetypes.guess_type(payload['header']['PATH'])[0]
+					print mime
 					if mime == None:
 						mime = 'text/html'
 				else:
@@ -274,6 +270,11 @@ class app:
 
 			self.srv_str += 'Content-Type: %s\r\n' % (mime)
 
+			try:
+				head_str = gen_head(data['header'])
+			except:
+				head_str = self.srv_str
+				
 		else:
 
 		# except:
