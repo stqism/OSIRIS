@@ -1,5 +1,6 @@
 mkdir -p /etc/osiris/app
-cp osirisd.py /bin/osirisd
+python -OO -m py_compile "osirisd.py"
+mv osirisd.pyo /bin/osirisd
 cp osiris.sh /etc/init.d/osiris
 yes n | cp -i osiris.conf /etc/osiris/
 yes n | cp -ir app/testapp* /etc/osiris/app/

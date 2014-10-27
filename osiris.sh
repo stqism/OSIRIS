@@ -10,7 +10,8 @@
 
 RUNAS=root
 CONFIG=/etc/osiris
-SCRIPT=osirisd
+PYTHON=`whereis python`
+SCRIPT=`whereis osirisd`
 
 PIDFILE=$CONFIG/pid
 LOGFILE=/var/log/osiris.log
@@ -21,7 +22,7 @@ start() {
     return 1
   fi
   echo 'Starting service' >&2
-  local CMD="$SCRIPT --config=$CONFIG &> \"$LOGFILE\" & echo \$!"
+  local CMD="$PYTHON $SCRIPT --config=$CONFIG &> \"$LOGFILE\" & echo \$!"
   su -c "$CMD" $RUNAS > "$PIDFILE"
   echo 'Service started' >&2
 }
