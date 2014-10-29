@@ -305,6 +305,14 @@ class app:
                 except:
                     pass
 
+            try:
+                if payload['header']['DNT']:
+                    print "STRIP"
+                    msg = re.sub(r'<tracker>.*?</tracker>', '', msg,
+                                 flags=re.DOTALL)
+            except:
+                pass
+
             if 'code' in data:
                 code = data['code']
             else:
