@@ -103,7 +103,8 @@ class app:
     srv_str += 'Connection: close\r\n'
 
     def code(self, int):
-        list = {200: '200 OK', 500: '500 Server error'}
+        list = {200: '200 OK', 301: '301 Moved Permanently', 303: '302 Found', 400: '401 Unauthorized', 403:
+                '403 Forbidden', 404: '404 Not Found', 500: '500 Server error', 505: '505 HTTP Version Not Supported'}
         if int in list:
             return list[int]
         else:
@@ -118,15 +119,18 @@ class app:
         payload = 'HTTP/1.1 %s\r\n' % self.code(http_code)
         if head_str:
             payload += head_str
-        payload += '''Content-Length: %s\r
-\r
-''' % len(buf)
+
+        if str(http_code).startswith('1') == False:
+            payload += 'Content-Length: %s\r\n' % len(buf)
+
+        payload += '\r\n'
         payload += buf
         return payload
 
     def header2dict(self, dict):
         hdict = {'TYPE': dict.split('\r\n', 1)[0].split(' ', 1)[0],
-                 'PATH': dict.split('\r\n', 1)[0].split(' ', 2)[1]}
+                 'PATH': dict.split('\r\n', 1)[0].split(' ', 2)[1],
+                 'PROTOCOL': dict.split('\r\n', 1)[0].split(' ', 2)[2]}
         real_dict = dict.splitlines()
 
         for i in xrange(1, len(real_dict)):
@@ -198,7 +202,11 @@ class app:
                 'runonce': run_once[hostname],
                 'depends': depend_app[hostname],
             }
-            data = exec_app[hostname].reply(payload)
+            if payload['header']['PROTOCOL'] == 'HTTP/1.1':
+                data = exec_app[hostname].reply(payload)
+            else:
+                data = {
+                    "code": 505, "msg": "Error, only HTTP/1.1 is supported.\r\n"}
 
             if "runonce" in data:
                 try:
