@@ -242,11 +242,11 @@ class app:
                 'runonce': run_once[hostname],
                 'depends': depend_app[hostname],
             }
-            # if payload['header']['PROTOCOL'] == 'HTTP/1.0':
-            #    data = {
-            #        "code": 505, "msg": "Error, only HTTP/1.1 is supported.\r\n"}
-            # else:
-            data = exec_app[hostname].reply(payload)
+            if payload['header']['PROTOCOL'] == 'HTTP/1.1' or proxy:
+                data = exec_app[hostname].reply(payload)
+            else:
+                data = {
+                    "code": 505, "msg": "Error, only HTTP/1.1 is supported.\r\n"}
 
             if "runonce" in data:
                 try:
