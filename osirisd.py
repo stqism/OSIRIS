@@ -306,8 +306,11 @@ class app:
                     pass
 
             try:
-                if payload['header']['DNT']:
-                    print "STRIP"
+                for opt in payload['header']:
+                    if opt.lower() == 'dnt':
+                        dnt = 1
+
+                if dnt:
                     msg = re.sub(r'<tracker>.*?</tracker>', '', msg,
                                  flags=re.DOTALL)
             except:
