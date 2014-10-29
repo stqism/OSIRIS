@@ -10,8 +10,8 @@
 
 RUNAS=root
 CONFIG=/etc/osiris
-PYTHON=`whereis python`
-SCRIPT=`whereis osirisd`
+PYTHON=python
+SCRIPT=/usr/bin/osirisd
 
 PIDFILE=$CONFIG/pid
 LOGFILE=/var/log/osiris.log
