@@ -237,7 +237,7 @@ class app:
                 if opt.lower() == 'dnt':
                     dnt = 1
             try:
-                str(len(dnt))
+                dnt
             except:
                 dnt = 0
 
