@@ -306,6 +306,17 @@ class app:
                 except:
                     pass
 
+            if 'xopt' in data:
+                xpot = data['xopt']
+                print xopt + ' found'
+            else:
+                xopt = 0
+
+            if xopt == 0:
+                print "removing"
+                msg = re.sub(r'<xopt>.*?</xopt>', '', msg,
+                             flags=re.DOTALL)
+
             try:
                 for opt in payload['header']:
                     if opt.lower() == 'dnt':
@@ -313,20 +324,6 @@ class app:
 
                 if dnt:
                     msg = re.sub(r'<tracker>.*?</tracker>', '', msg,
-                                 flags=re.DOTALL)
-            except:
-                pass
-
-            try:
-                if 'xopt' in data:
-                    xpot = data['xopt']
-                else:
-                    xopt = 0
-                    print "saving"
-
-                if xopt != 1:
-                    print "removing"
-                    msg = re.sub(r'<xopt>.*?</xopt>', '', msg,
                                  flags=re.DOTALL)
             except:
                 pass
