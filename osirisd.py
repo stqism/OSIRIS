@@ -309,7 +309,7 @@ class app:
             print "1"
             if 'xopt' in data:
                 print "2"
-                xpot = data['xopt']
+                xopt = data['xopt']
                 print xopt + ' found'
             else:
                 xopt = 0
