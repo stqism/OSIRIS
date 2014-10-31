@@ -106,7 +106,7 @@ for i in range(len(config.sections())):
 
                 dep_src = open(config_dir + '/app/' + _mod_name + '.py')
                 dep_bytecode = compile_restricted(
-                    mod_src.read(), '<string>', 'exec')
+                    dep_src.read(), '<string>', 'exec')
                 dep_src.close()
 
                 depend_app[_domain][dep] = imp.new_module(dep)
@@ -228,8 +228,12 @@ class app:
                 return self.html(500, 'No fallback configured :(\r\n',
                                  head_str='')
 
-        if debug == 3:
-            reload(exec_app[hostname])
+        if debug:
+            mod_src = open(config_dir + '/app/' + host_mod[hostname] + '.py')
+            mod_bytecode = compile_restricted(
+                mod_src.read(), '<string>', 'exec')
+            mod_src.close()
+            exec mod_bytecode in exec_app[hostname].__dict__
 
         try:
             try:
