@@ -306,7 +306,9 @@ class app:
                 except:
                     pass
 
+            print "1"
             if 'xopt' in data:
+                print "2"
                 xpot = data['xopt']
                 print xopt + ' found'
             else:
