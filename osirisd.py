@@ -236,10 +236,13 @@ class app:
             for opt in app_header:
                 if opt.lower() == 'dnt':
                     dnt = 1
-
+                    print dnt
+            print "check if exists"
             try:
-                len(dnt)
+                print "trying to get len"
+                print len(dnt)
             except:
+                print "err"
                 dnt = 0
 
             payload = {
