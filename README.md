@@ -58,3 +58,14 @@ If you use templeting please make a folder with the name of the app without .py.
 Writing modules
 ======
 An example module showing off features is in ``app/testapp.py``
+
+Do Not Track
+======
+OSIRIS supports respecting the DHT header passed by browsers.
+To use it, shove a ``<tracker></tracker>`` around your tracking Javascript, it won't be sent if the header is passed.
+
+In addition, a `dnt` int is passed in the payload sent to the module.
+
+Extra options
+======
+OSIRIS also supports another custom tag called ``<xopt></xopt>``, if it's enabled in the returned data it will be shown, otherwise it's stripped out on load. The best possible use of this is only showing a cookie banner for IPs from Europe, and can be done pretty easily. This can be seen in action at https://osiris.tox.im
