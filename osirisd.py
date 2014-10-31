@@ -232,12 +232,10 @@ class app:
                     logging.error('Reverse proxy not found!')
             else:
                 addr_real = addy[0]
-                try:
-                for opt in app_header:
-                    if opt.lower() == 'dnt':
-                        dnt = 1
-                    else:
-                        dnt = 0
+
+            for opt in app_header:
+                if opt.lower() == 'dnt':
+                    dnt = 1
 
             payload = {
                 'header': app_header,
@@ -324,8 +322,6 @@ class app:
             if dnt:
                 msg = re.sub(r'<tracker>.*?</tracker>', '', msg,
                              flags=re.DOTALL)
-            except:
-                pass
 
             if 'code' in data:
                 code = data['code']
