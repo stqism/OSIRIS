@@ -306,15 +306,11 @@ class app:
                 except:
                     pass
 
-            print "1"
             if 'xopt' in data:
-                print "2"
                 xopt = data['xopt']
             else:
                 xopt = 0
-            print xopt
             if xopt == 0:
-                print "removing"
                 msg = re.sub(r'<xopt>.*?</xopt>', '', msg,
                              flags=re.DOTALL)
 
