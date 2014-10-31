@@ -211,9 +211,7 @@ class app:
         if debug:
             reload(exec_app[hostname])
 
-        # try:
-
-        if True:
+        try:
             try:
                 buf_head = buf.split('''\r
 \r
@@ -243,7 +241,10 @@ class app:
                 'depends': depend_app[hostname],
             }
             if payload['header']['PROTOCOL'] == 'HTTP/1.1' or proxy:
-                data = exec_app[hostname].reply(payload)
+                try:
+                    data = exec_app[hostname].reply(payload)
+                except:
+                    data = {"code": 500, "msg": "A module error occuredr\n"}
             else:
                 data = {
                     "code": 505, "msg": "Error, only HTTP/1.1 is supported.\r\n"}
@@ -338,13 +339,16 @@ class app:
             except:
                 head_str = self.srv_str
 
-        else:
-
-            # except:
+        except:
 
             code = 500
-            msg = 'Error parsing data\r\n'
-            head_str = self.srv_str
+            if debug:
+                msg = 'The response sent from the module was invalid<br><br>Payload:<br><code>%s</code><br><br>Response:<br><code>%s</code>' % (
+                    payload, data)
+            else:
+                msg = 'A module error occured\r\n'
+
+            head_str = self.srv_str + 'Content-Type: text/html\r\n'
 
         return self.html(code, msg, head_str)
 
@@ -405,6 +409,8 @@ class Connection(object):
         try:
             buf = unicode(self.sock.recv(4096))
             if len(buf) == 0:
+                self.resp = "HTTP/1.1 500 OK\r\nServer: OSIRIS Mach/4\r\rConnection: close\r\n\r\OSIRIS ERR/NODATA"
+                self.reset(pyev.EV_READ | pyev.EV_WRITE)
                 self.handle_error('No socket data', logging.DEBUG,
                                   False)
                 return
@@ -432,7 +438,7 @@ class Connection(object):
 
                 # sent = self.sock.send(self.buf)
 
-                sent = self.sock.send(self.resp)
+                sent = self.sock.sendall(self.resp)
         except socket.error, err:
             if err.args[0] not in NONBLOCKING:
                 self.handle_error('error writing to %s' % (self.sock))
@@ -442,6 +448,7 @@ class Connection(object):
     def io_cb(self, watcher, revents):
         if revents & pyev.EV_READ:
             self.handle_read()
+
         elif revents & pyev.EV_WRITE:
             self.handle_write()
             self.close()
