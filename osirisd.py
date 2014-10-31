@@ -317,6 +317,15 @@ class app:
             except:
                 pass
 
+            try:
+                if xopt in data:
+                    xopt = 1
+                else:
+                    msg = re.sub(r'<x-opt>.*?</x-opt>', '', msg,
+                                 flags=re.DOTALL)
+            except:
+                pass
+
             if 'code' in data:
                 code = data['code']
             else:
@@ -586,7 +595,8 @@ class ServerMaster(object):
                                          socket.SOCK_STREAM)
         self.listen_sock.setsockopt(socket.SOL_SOCKET,
                                     socket.SO_REUSEADDR, 1)
-        self.listen_sock.bind((start_server_ip, start_server_port))
+        #self.listen_sock.bind((start_server_ip, start_server_port))
+        self.listen_sock.bind("./osiris.sock")
         self.listen_sock.setblocking(0)
         self.listen_sock.settimeout(1)
         self.address = self.listen_sock.getsockname()
