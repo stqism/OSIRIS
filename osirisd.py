@@ -318,9 +318,12 @@ class app:
                 pass
 
             try:
-                if xopt in data:
-                    xopt = 1
+                if 'xopt' in data:
+                    xpot = data['xopt']
                 else:
+                    xopt = 0
+
+                if xopt != 1:
                     msg = re.sub(r'<x-opt>.*?</x-opt>', '', msg,
                                  flags=re.DOTALL)
             except:
