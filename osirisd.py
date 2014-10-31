@@ -322,9 +322,11 @@ class app:
                     xpot = data['xopt']
                 else:
                     xopt = 0
+                    print "saving"
 
                 if xopt != 1:
-                    msg = re.sub(r'<x-opt>.*?</x-opt>', '', msg,
+                    print "removing"
+                    msg = re.sub(r'<xopt>.*?</xopt>', '', msg,
                                  flags=re.DOTALL)
             except:
                 pass
