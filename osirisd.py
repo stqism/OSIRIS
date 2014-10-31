@@ -232,6 +232,12 @@ class app:
                     logging.error('Reverse proxy not found!')
             else:
                 addr_real = addy[0]
+                try:
+                for opt in app_header:
+                    if opt.lower() == 'dnt':
+                        dnt = 1
+                    else:
+                        dnt = 0
 
             payload = {
                 'header': app_header,
@@ -239,6 +245,7 @@ class app:
                 'ip': addr_real,
                 'runonce': run_once[hostname],
                 'depends': depend_app[hostname],
+                'dnt': dnt,
             }
             if payload['header']['PROTOCOL'] == 'HTTP/1.1' or proxy:
                 try:
@@ -314,14 +321,9 @@ class app:
                 msg = re.sub(r'<xopt>.*?</xopt>', '', msg,
                              flags=re.DOTALL)
 
-            try:
-                for opt in payload['header']:
-                    if opt.lower() == 'dnt':
-                        dnt = 1
-
-                if dnt:
-                    msg = re.sub(r'<tracker>.*?</tracker>', '', msg,
-                                 flags=re.DOTALL)
+            if dnt:
+                msg = re.sub(r'<tracker>.*?</tracker>', '', msg,
+                             flags=re.DOTALL)
             except:
                 pass
 
