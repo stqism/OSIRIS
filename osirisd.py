@@ -4,12 +4,14 @@
 
 import multiprocessing
 from multiprocessing.reduction import reduce_handle, rebuild_handle
+from RestrictedPython import compile_restricted
 import Queue
 import os
 import sys
 import re
 import time
 import mimetypes
+import imp
 import struct
 import socket
 import signal
@@ -81,10 +83,19 @@ run_once = {}
 depend_app = {}
 for i in range(len(config.sections())):
     if config.sections()[i] != 'OSIRIS':
+
         _domain = config.sections()[i]
         _mod_name = config.get(config.sections()[i], 'mod')
-        exec_app[_domain] = __import__(_mod_name)
+
+        mod_src = open(config_dir + '/app/' + _mod_name + '.py')
+        mod_bytecode = compile_restricted(mod_src.read(), '<string>', 'exec')
+        mod_src.close()
+
+        exec_app[_domain] = imp.new_module(_mod_name)
+        sys.modules[_mod_name] = exec_app[_domain]
+        exec mod_bytecode in exec_app[_domain].__dict__
         host_mod[_domain] = _mod_name
+
         try:
             run_once[_domain] = exec_app[_domain].runonce()
         except:
@@ -92,7 +103,16 @@ for i in range(len(config.sections())):
         try:
             depend_app[_domain] = {}
             for dep in exec_app[_domain].depends():
-                depend_app[_domain][dep] = __import__(dep)
+
+                dep_src = open(config_dir + '/app/' + _mod_name + '.py')
+                dep_bytecode = compile_restricted(
+                    mod_src.read(), '<string>', 'exec')
+                dep_src.close()
+
+                depend_app[_domain][dep] = imp.new_module(dep)
+                sys.modules[dep] = depend_app[_domain][dep]
+                exec dep_bytecode in depend_app[_domain][dep].__dict__
+
         except:
             depend_app[_domain] = 0
 
@@ -208,7 +228,7 @@ class app:
                 return self.html(500, 'No fallback configured :(\r\n',
                                  head_str='')
 
-        if debug:
+        if debug == 3:
             reload(exec_app[hostname])
 
         try:
@@ -250,10 +270,11 @@ class app:
                 'dnt': dnt,
             }
             if payload['header']['PROTOCOL'] == 'HTTP/1.1' or proxy:
+
                 try:
                     data = exec_app[hostname].reply(payload)
                 except:
-                    data = {"code": 500, "msg": "A module error occuredr\n"}
+                    data = {"code": 500, "msg": "A module error occured\r\n"}
             else:
                 data = {
                     "code": 505, "msg": "Error, only HTTP/1.1 is supported.\r\n"}
