@@ -238,7 +238,7 @@ class app:
                     dnt = 1
 
             try:
-                sizeof(dnt)
+                len(dnt)
             except:
                 dnt = 0
 
