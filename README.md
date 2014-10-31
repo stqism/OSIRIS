@@ -68,4 +68,4 @@ In addition, a `dnt` int is passed in the payload sent to the module.
 
 Extra options
 ======
-OSIRIS also supports another custom called ``<xopt></xopt>``, if it's enabled in the returned data it will be shown, otherwise it's stripped out on load. The best possible use of this is only showing a cookie banner for IPs from Europe, and can be done pretty easily. This can be seen in action at https://osiris.tox.im
+OSIRIS also supports another custom tag called ``<xopt></xopt>``, if it's enabled in the returned data it will be shown, otherwise it's stripped out on load. The best possible use of this is only showing a cookie banner for IPs from Europe, and can be done pretty easily. This can be seen in action at https://osiris.tox.im
