@@ -237,6 +237,11 @@ class app:
                 if opt.lower() == 'dnt':
                     dnt = 1
 
+            try:
+                sizeof(dnt)
+            except:
+                dnt = 0
+
             payload = {
                 'header': app_header,
                 'body': buf_body,
