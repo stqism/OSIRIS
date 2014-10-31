@@ -310,10 +310,9 @@ class app:
             if 'xopt' in data:
                 print "2"
                 xopt = data['xopt']
-                print xopt + ' found'
             else:
                 xopt = 0
-
+            print xopt
             if xopt == 0:
                 print "removing"
                 msg = re.sub(r'<xopt>.*?</xopt>', '', msg,
