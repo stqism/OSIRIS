@@ -4,7 +4,6 @@
 
 import multiprocessing
 from multiprocessing.reduction import reduce_handle, rebuild_handle
-from RestrictedPython import compile_restricted
 import Queue
 import os
 import sys
@@ -20,6 +19,13 @@ import logging
 import pyev
 import ConfigParser
 
+sandbox = 0
+
+if (sandbox):
+    from RestrictedPython import compile_restricted
+    from RestrictedPython.Guards import safe_builtins, full_write_guard
+    from RestrictedPython.PrintCollector import PrintCollector
+
 
 class conf(Exception):
 
@@ -28,6 +34,12 @@ class conf(Exception):
     def __str__(self):
 
         return repr(self.value)
+
+
+def getitem(obj, index):
+    if obj is not None and type(obj) in (list, tuple, dict):
+        return obj[index]
+    raise Exception()
 
 try:
     if sys.argv[1].startswith('--config='):
@@ -76,6 +88,17 @@ try:
 except:
     proxy = 0
 
+if (sandbox):
+    _print_ = PrintCollector
+    _write_ = full_write_guard
+    _getattr_ = getattr
+    _getitem_ = getitem
+    restricted_globals = dict(__builtins__=safe_builtins)
+    restricted_globals['_print_'] = _print_
+    restricted_globals['_write_'] = _write_
+    restricted_globals['_getattr_'] = _getattr_
+    restricted_globals['_getitem_'] = _getitem_
+
 sys.path.append(config_dir + '/app')
 exec_app = {}
 host_mod = {}
@@ -88,7 +111,11 @@ for i in range(len(config.sections())):
         _mod_name = config.get(config.sections()[i], 'mod')
 
         mod_src = open(config_dir + '/app/' + _mod_name + '.py')
-        mod_bytecode = compile_restricted(mod_src.read(), '<string>', 'exec')
+        if (sandbox):
+            mod_bytecode = compile_restricted(
+                mod_src.read(), '<string>', 'exec')
+        else:
+            mod_bytecode = compile(mod_src.read(), '<string>', 'exec')
         mod_src.close()
 
         exec_app[_domain] = imp.new_module(_mod_name)
@@ -105,8 +132,12 @@ for i in range(len(config.sections())):
             for dep in exec_app[_domain].depends():
 
                 dep_src = open(config_dir + '/app/' + _mod_name + '.py')
-                dep_bytecode = compile_restricted(
-                    dep_src.read(), '<string>', 'exec')
+                if (sandbox):
+                    dep_bytecode = compile_restricted(
+                        dep_src.read(), '<string>', 'exec')
+                else:
+                    dep_bytecode = compile(
+                        dep_src.read(), '<string>', 'exec')
                 dep_src.close()
 
                 depend_app[_domain][dep] = imp.new_module(dep)
@@ -230,8 +261,12 @@ class app:
 
         if debug:
             mod_src = open(config_dir + '/app/' + host_mod[hostname] + '.py')
-            mod_bytecode = compile_restricted(
-                mod_src.read(), '<string>', 'exec')
+            if (sandbox):
+                mod_bytecode = compile_restricted(
+                    mod_src.read(), '<string>', 'exec')
+            else:
+                mod_bytecode = compile(
+                    mod_src.read(), '<string>', 'exec')
             mod_src.close()
             exec mod_bytecode in exec_app[hostname].__dict__
 
@@ -278,7 +313,10 @@ class app:
                 try:
                     data = exec_app[hostname].reply(payload)
                 except:
-                    data = {"code": 500, "msg": "A module error occured\r\n"}
+                    err = sys.exc_info()
+                    logging.error(err)
+                    data = {
+                        "code": 500, "msg": "A module error occured, details printed to logging"}
             else:
                 data = {
                     "code": 505, "msg": "Error, only HTTP/1.1 is supported.\r\n"}
