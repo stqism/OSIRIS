@@ -230,7 +230,8 @@ class app:
         return hdict
 
     def hostname(self, buf):
-        header_ln = re.findall('Host.*$', buf, re.MULTILINE)
+        buf = buf.lower()
+        header_ln = re.findall('host.*$', buf, re.MULTILINE)
         return header_ln[0].split(' ', 1)[1].split(':', 1)[0]
 
     def gen_head(self, dict):
