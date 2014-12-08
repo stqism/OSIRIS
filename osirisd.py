@@ -366,16 +366,8 @@ class app:
             if 'template' in data:
                 temp_opt = data['template']
                 try:
-                    msg = msg.replace('{{', '{')
-                    msg = msg.replace('}}', '}')
                     for (entry, temp_opt_list) in temp_opt.iteritems():
-
-                        # msg = msg.strip(' ').replace('{' + entry + '}',
-                        # temp_opt[entry]) 3 times faster than re.sub, breaks
-                        # on { slow }
-
-                        msg = re.sub('({.*?' + entry + '.*?})',
-                                     temp_opt[entry], msg)
+                        msg = msg.strip(' ').replace('{' + entry + '}',temp_opt[entry])
                 except:
                     pass
 
