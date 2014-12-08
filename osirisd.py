@@ -78,6 +78,8 @@ config = ConfigParser.ConfigParser()
 config.readfp(cfile)
 cfile.close
 
+persist = {}
+
 try:
     debug = int(config.get('OSIRIS', 'debug'))
 except:
@@ -244,6 +246,7 @@ class app:
             return head_str
 
     def respond(self, buf, addy):
+        global persist
         global config_dir
         gen_head = self.gen_head
         hostname = self.hostname(buf).lower().strip()
@@ -301,6 +304,9 @@ class app:
             except:
                 dnt = 0
 
+            if hostname not in persist:
+                persist[hostname] = 0
+
             payload = {
                 'header': app_header,
                 'body': buf_body,
@@ -308,6 +314,7 @@ class app:
                 'runonce': run_once[hostname],
                 'depends': depend_app[hostname],
                 'dnt': dnt,
+                'persist': persist[hostname],
             }
             if payload['header']['PROTOCOL'] == 'HTTP/1.1' or proxy:
 
@@ -340,6 +347,9 @@ class app:
 
             if "reload" in data:
                 reload(exec_app[hostname])
+
+            if "persist" in data:
+                persist[hostname] = data['persist']
 
             if 'file' in data:
                 file_path = os.path.join(config_dir, 'app', host_mod[hostname],
